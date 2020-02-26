@@ -124,6 +124,8 @@ impl Vm {
         println!("setup_sregs: {:?}", _sregs_res);
         let _fpu_res = super::x86::setup_fpu(&vcpu);
         println!("setup_fpu: {:?}", _fpu_res);
+        let _xcrs_res = super::x86::setup_xcrs(&vcpu);
+        println!("setup_xcrs: {:?}", _xcrs_res);
 
         Some(Vm {
             vm,
@@ -363,7 +365,9 @@ fn xmm() {
     let code = [
         0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0,
         0xff, // movabs rax,0xfff0000000000000
-        0x66, 0x48, 0x0f, 0x6e, 0xc0, //          movq   xmm0,rax
+        //0x66, 0x48, 0x0f, 0x6e, 0xc0, //          movq   xmm0,rax
+        0xc5, 0xf9, 0x6e, 0xc0,             // vmovd  xmm0,eax
+        0x0f, 0x28, 0xc8,             //   movaps xmm1,xmm0
         0x48, 0xB9, 0x78, 0x56, 0x34, 0x12, 0x78, 0x56, 0x34,
         0x12, // mov ecx, 0x1234567812345678
         0xf4, // hlt
@@ -396,6 +400,8 @@ fn xmm() {
     println!("debugregs: {:x?}", debugregs);
     let fpu = vm.vcpu.get_fpu().unwrap();
     println!("fpu: {:x?}", fpu);
+    println!("fpu.xmm[0]: {:x?}", fpu.xmm[0]);
+    println!("fpu.xmm[1]: {:x?}", fpu.xmm[1]);
 
     assert_eq!(res, Ok(RunResult::Hlt));
     assert_eq!(regs.rax, 0xFFF0000000000000);
@@ -404,5 +410,9 @@ fn xmm() {
         &fpu.xmm[0][..],
         [0, 0, 0, 0, 0, 0, 0xF0, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0]
     );
-    assert_eq!(regs.rip, 0x10401a);
+    assert_eq!(
+        &fpu.xmm[1][..],
+        [0, 0, 0, 0, 0, 0, 0xF0, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0]
+    );
+    //assert_eq!(regs.rip, 0x10401a);
 }

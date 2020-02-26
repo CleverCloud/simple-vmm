@@ -1,5 +1,5 @@
 use super::gdt;
-use kvm_bindings::{kvm_fpu, kvm_msr_entry, kvm_sregs, Msrs};
+use kvm_bindings::{kvm_fpu, kvm_msr_entry, kvm_sregs, kvm_xcrs, Msrs};
 use kvm_ioctls::VcpuFd;
 use std::mem;
 use vm_memory::{Address, Bytes, GuestAddress, GuestMemory};
@@ -90,8 +90,31 @@ pub fn setup_sregs<M: GuestMemory>(mem: &M, vcpu: &VcpuFd) -> Result<(), &'stati
     sregs.cr0 |= 1 << 1; // set CR0.MP
     sregs.cr4 |= 3 << 9; // set CR4.OSFXSR and CR4.OSXMMEXCPT
 
+    // XSAVE support
+    //sregs.cr4 |= 1 << 18;
+
     vcpu.set_sregs(&sregs)
         .map_err(|_| "Error::SetSRegsIoctlFailed")?;
+
+    Ok(())
+}
+
+/// configures xcrs for a given cpu.
+///
+/// # arguments
+///
+/// * `vcpu_fd` - the fd returned from the kvm_create_vcpu ioctl.
+pub fn setup_xcrs(vcpu: &VcpuFd) -> Result<(), &'static str> {
+    let mut xcrs: kvm_xcrs = vcpu.get_xcrs().map_err(|_| "error::GetXcrIoctlFailed")?;
+
+    println!("xcrs[0] before: {:x?}", xcrs.xcrs[0]);
+
+    // activate AVX and AXV-512
+    xcrs.xcrs[0].xcr |= 0b11100011;
+    println!("xcrs[0] after: {:x?}", xcrs.xcrs[0]);
+
+    vcpu.set_xcrs(&xcrs)
+        .map_err(|_| "Error::SetXcrsIoctlFailed")?;
 
     Ok(())
 }
