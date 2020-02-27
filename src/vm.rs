@@ -37,7 +37,8 @@ impl Vm {
         // initialize guest memory
         let guest_addr = 0x0;
         let mem_size = base_size;
-        let gm = GuestMemoryMmap::new(&[(GuestAddress(guest_addr), mem_size as usize)]).unwrap();
+        let gm =
+            GuestMemoryMmap::from_ranges(&[(GuestAddress(guest_addr), mem_size as usize)]).unwrap();
         let load_addr = gm.get_host_address(GuestAddress(guest_addr)).unwrap();
 
         let slot = 0;
