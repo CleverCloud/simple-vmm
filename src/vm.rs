@@ -453,3 +453,19 @@ fn avx_check() {
     println!("ZF: {:?}", regs.rflags & 0x40);
     assert_eq!(0x40, regs.rflags & 0x40);
 }
+#[test]
+fn avx512_check() {
+    let mut vm = Vm::new(0x205000).unwrap();
+    let code = [
+      0xB8, 0x07, 0x00, 0x00, 0x00, // mov  eax, 0xD
+      0x0F, 0xA2,                   // cpuid
+      0xF4                          // hlt
+    ];
+
+    println!("load code: {:x?}", vm.write_slice(&code, 0x104000));
+    vm.run(0x104000).unwrap();
+    let regs = vm.vcpu.get_regs().unwrap();
+    println!("regs: {:x?}", regs);
+    println!("rbx: {:b}", regs.rbx);
+    assert_eq!(regs.rbx, 0b11011100001000110000000000100000);
+}
