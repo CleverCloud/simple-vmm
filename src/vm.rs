@@ -417,3 +417,39 @@ fn xmm() {
     );
     //assert_eq!(regs.rip, 0x10401a);
 }
+
+#[test]
+fn sse_check() {
+    let mut vm = Vm::new(0x205000).unwrap();
+    let code = [
+      0xB8, 0x01, 0x00, 0x00, 0x00,       // mov  eax, 0x1
+      0x0F, 0xA2,                         // cpuid
+      0xF7, 0xC2, 0x01, 0x00, 0x00, 0x02, // test edx, 1<<25
+    ];
+
+    println!("load code: {:x?}", vm.write_slice(&code, 0x104000));
+    vm.run(0x104000);//.unwrap();
+    let regs = vm.vcpu.get_regs().unwrap();
+    println!("regs: {:x?}", regs);
+    println!("flags: {:x?}", regs.rflags);
+    println!("ZF: {:?}", regs.rflags & 0x40);
+    assert_eq!(0x40, regs.rflags & 0x40);
+}
+
+#[test]
+fn avx_check() {
+    let mut vm = Vm::new(0x205000).unwrap();
+    let code = [
+      0xB8, 0x01, 0x00, 0x00, 0x00,       // mov  eax, 0x1
+      0x0F, 0xA2,                         // cpuid
+      0xF7, 0xC2, 0x00, 0x00, 0x00, 0x10  // test edx, 1<<28
+    ];
+
+    println!("load code: {:x?}", vm.write_slice(&code, 0x104000));
+    vm.run(0x104000);//.unwrap();
+    let regs = vm.vcpu.get_regs().unwrap();
+    println!("regs: {:x?}", regs);
+    println!("flags: {:x?}", regs.rflags);
+    println!("ZF: {:?}", regs.rflags & 0x40);
+    assert_eq!(0x40, regs.rflags & 0x40);
+}
