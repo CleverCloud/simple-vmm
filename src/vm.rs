@@ -209,10 +209,10 @@ impl Vm {
                     return Ok(RunResult::Hlt);
                 }
                 Ok(VcpuExit::Shutdown) => {
-                    //let e = sys_util::Error::last();
-                    //println!("shutdown: errno = {:?}", e);
-                    //let ev = self.vcpu.get_vcpu_events();
-                    //println!("shutdown: vcpu events = {:x?}", ev);
+                    let e = kvm_ioctls::Error::last();
+                    println!("shutdown: errno = {:?}", e);
+                    let ev = self.vcpu.get_vcpu_events();
+                    println!("shutdown: vcpu events = {:x?}", ev);
                     return Ok(RunResult::Shutdown);
                 }
                 Ok(r) => {
