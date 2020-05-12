@@ -9,7 +9,7 @@ build = "build.rs"
 [dependencies]
 kvm-bindings = { version = "0.2", features = [ "fam-wrappers" ] }
 kvm-ioctls = "0.4"
-vm-memory = { git = "https://github.com/rust-vmm/vm-memory", rev = "2099f4162f97", features = [ "backend-mmap" ] }
+vm-memory = { version = ">=0.1", features = [ "backend-mmap" ] }
 
 [build-dependencies]
 cc = "^1.0.15"
