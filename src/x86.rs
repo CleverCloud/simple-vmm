@@ -10,13 +10,13 @@ use vm_memory::{Address, Bytes, GuestAddress, GuestMemory};
 ///
 /// * `vcpu` - Structure for the vcpu that holds the vcpu fd.
 pub fn setup_msrs(vcpu: &VcpuFd) -> Result<(), &'static str> {
-    let msrs = create_msr_entries();
+    let msrs = create_msr_entries().map_err(|_| "Error::MsrIoctlFailed")?;
     vcpu.set_msrs(&msrs).map_err(|_| "Error::MsrIoctlFailed")?;
 
     Ok(())
 }
 
-fn create_msr_entries() -> Msrs {
+fn create_msr_entries() -> Result<Msrs, vmm_sys_util::fam::Error> {
     Msrs::from_entries(&[
         kvm_msr_entry {
             index: super::msr_index::MSR_IA32_SYSENTER_CS,
