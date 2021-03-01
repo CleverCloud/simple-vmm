@@ -1,12 +1,3 @@
-# example VM monitor
-
-This project demonstrates usage of [rust-vmm](https://github.com/rust-vmm)
-
-This library creates a virtual machine with a single CPU, starting directly in long mode.
-
-## Usage
-
-```rust
 use simple_vmm::Vm;
 
 fn main() {
@@ -23,9 +14,5 @@ fn main() {
   println!("rax: {}, rip: {:x?}", regs.rax, regs.rip);
   assert_eq!(regs.rax, 0x1234567812345678);
   assert_eq!(regs.rip, 0x10400B);
+  println!("done!");
 }
-```
-
-# License
-
-MIT, and some code in BSD extracted from CrosVM.
